@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using NLog;
+using System;
+using System.Reflection;
 
 namespace Proxii.NLog
 {
@@ -34,13 +36,18 @@ namespace Proxii.NLog
             if (string.IsNullOrWhiteSpace(format))
                 logger.Log(LogLevel.Warn, "LogCalls() provided with empty or null format string");
 
-            return proxii.BeforeInvoke((m, args) =>
-            {
-                var message = format.Replace("%method%", m.Name)
-                    .Replace("%args%", string.Join(", ", args));
+            var nlogFormat = format.Replace("%method%", "{0}")
+                                   .Replace("%args%", "{1}");
 
-                logger.Log(logLevel, message);
-            });
+            return proxii.BeforeInvoke(CreateAction(logger, logLevel, format));
+        }
+
+        private static Action<MethodInfo, object[]> CreateAction(Logger logger, LogLevel logLevel, string format)
+        {
+            return (m, args) =>
+            {
+                logger.Log(logLevel, format, m.Name, string.Join(", ", args.ToString()));
+            };
         }
 
         /// <summary>
