@@ -39,10 +39,10 @@ namespace Proxii.NLog
             var nlogFormat = format.Replace("%method%", "{0}")
                                    .Replace("%args%", "{1}");
 
-            return proxii.BeforeInvoke(CreateAction(logger, logLevel, format));
+            return proxii.BeforeInvoke(CreateLogCallsAction(logger, logLevel, nlogFormat));
         }
 
-        private static Action<MethodInfo, object[]> CreateAction(Logger logger, LogLevel logLevel, string format)
+        private static Action<MethodInfo, object[]> CreateLogCallsAction(Logger logger, LogLevel logLevel, string format)
         {
             return (m, args) =>
             {
@@ -116,41 +116,57 @@ namespace Proxii.NLog
         /// <summary>
         /// Logs a benchmark for all intercepted method calls using the given format string
         /// 
-        /// The format string replaces
-        /// "%timing%" with the timing in ms
+        /// The format string replaces:
+        /// "%timing%" with the timing in ms. By default uses 2-digit floating point format (e.g. 2.64)
+        /// If an alternative format is desired, pass a format string as specified in https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
+        /// 
         /// "%method%" with the method name
         /// "%args%" with a comma-delimited argument list
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="proxii"></param>
         /// <param name="logLevel">NLog visibility level to log at</param>
-        /// <param name="format"></param>
+        /// <param name="messageFormat">Format string for message. See method description/docs.</param>
+        /// <param name="timingFormat">Formatting to use for the timing parameter</param>
         /// <returns></returns>
-        public static IProxii<T> LogBenchmark<T>(this IProxii<T> proxii, LogLevel logLevel, string format)
+        public static IProxii<T> LogBenchmark<T>(this IProxii<T> proxii, LogLevel logLevel, string messageFormat, string timingFormat = "F2")
             where T : class
         {
-            return proxii.Benchmark((timing, method, args) =>
-            {
-                var message = format.Replace("%timing%", timing.ToString("F2"))
-                                    .Replace("%method%", method.Name)
-                                    .Replace("%args%", string.Join(", ", args));
+            var logger = GetLogger(typeof(T).FullName);
+            var nLogFormat = messageFormat.Replace("%timing%", "{0}")
+                                          .Replace("%method%", "{1}")
+                                          .Replace("%args%", "{2}");
 
-                GetLogger(typeof(T).FullName).Log(logLevel, message);
-            });
+            return proxii.Benchmark(GetLogBenchmarkAction(logger, logLevel, nLogFormat));
         }
 
         /// <summary>
         /// Logs a benchmark for all intercepted method calls using the given format string
+        /// 
+        /// The format string replaces:
+        /// "%timing%" with the timing in ms. By default uses 2-digit floating point format (e.g. 2.64)
+        /// If an alternative format is desired, pass a format string as specified in https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
+        /// 
+        /// "%method%" with the method name
+        /// "%args%" with a comma-delimited argument list
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="proxii"></param>
-        /// <param name="logLevel">NLog visibility level to log at</param>
-        /// <param name="format"></param>
+        /// <param name="messageFormat">Format string for message. See method description/docs.</param>
+        /// <param name="timingFormat">Formatting to use for the timing parameter</param>
         /// <returns></returns>
-        public static IProxii<T> LogBenchmark<T>(this IProxii<T> proxii, string format)
+        public static IProxii<T> LogBenchmark<T>(this IProxii<T> proxii, string messageFormat, string timingFormat = "F2")
             where T : class
         {
-            return LogBenchmark(proxii, LogLevel.Info, format);
+            return LogBenchmark(proxii, LogLevel.Info, messageFormat, timingFormat);
+        }
+
+        private static Action<double, MethodInfo, object[]> GetLogBenchmarkAction(Logger logger, LogLevel logLevel, string format)
+        {
+            return (timing, method, args) =>
+            {
+                logger.Log(logLevel, format, timing, method.Name, string.Join(", ", args));
+            };
         }
 
         private static Logger GetLogger(string className)
