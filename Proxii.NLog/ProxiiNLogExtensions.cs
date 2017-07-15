@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using NLog;
 using System;
+using System.Linq;
 using System.Reflection;
 
 namespace Proxii.NLog
@@ -20,7 +21,7 @@ namespace Proxii.NLog
         /// Method call logging is performed before invocation.
         /// 
         /// The format string replaces:
-        /// "%method%" with the method name
+        /// "%method%" with the method signature
         /// "%args%" with a comma-delimited argument list
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -28,16 +29,20 @@ namespace Proxii.NLog
         /// <param name="logLevel">The NLog level to log the message to. Defaults to LogLevel.Info</param>
         /// <param name="format">The format string to use to generate the message</param>
         /// <returns></returns>
-        public static IProxii<T> LogCalls<T>(this IProxii<T> proxii, LogLevel logLevel, string format = null)
+        public static IProxii<T> LogCalls<T>(this IProxii<T> proxii, LogLevel logLevel, string format)
             where T : class
         {
             var logger = GetLogger(typeof(T).FullName);
 
             if (string.IsNullOrWhiteSpace(format))
+            {
                 logger.Log(LogLevel.Warn, "LogCalls() provided with empty or null format string");
+                return proxii;
+            }
+                
 
-            var nlogFormat = format.Replace("%method%", "{0}")
-                                   .Replace("%args%", "{1}");
+            var nlogFormat = format.Replace("%method%", "{0}({1})")
+                                   .Replace("%args%", "{2}");
 
             return proxii.BeforeInvoke(CreateLogCallsAction(logger, logLevel, nlogFormat));
         }
@@ -46,14 +51,19 @@ namespace Proxii.NLog
         {
             return (m, args) =>
             {
-                logger.Log(logLevel, format, m.Name, string.Join(", ", args.ToString()));
+                logger.Log(logLevel, format, m.Name, ParameterListToString(m.GetParameters()), string.Join(", ", args));
             };
+        }
+
+        private static string ParameterListToString(ParameterInfo[] parameters)
+        {
+            return string.Join(", ", parameters.Select(p => $"{p.ParameterType.Name} {p.Name}"));
         }
 
         /// <summary>
         /// Logs method calls to the configured logger based on a default format.
         /// 
-        /// for MethodName level, the format is "called method %method%"
+        /// for MethodSignature level, the format is "called method %method%"
         /// for Args level, the format is "called method %method% with arguments (%args)"
         /// 
         /// Method call logging is performed before invocation.
@@ -62,15 +72,15 @@ namespace Proxii.NLog
         /// <param name="proxii"></param>
         /// <param name="detailLevel">The level of information to provide in the log message</param>
         /// <returns></returns>
-        public static IProxii<T> LogCalls<T>(this IProxii<T> proxii, LogLevel logLevel, MethodCallDetailLevel detailLevel)
+        public static IProxii<T> LogCalls<T>(this IProxii<T> proxii, LogLevel logLevel, MethodCallDetailLevel detailLevel = MethodCallDetailLevel.MethodSignature)
             where T : class
         {
             switch (detailLevel)
             {
-                case MethodCallDetailLevel.MethodName:
+                case MethodCallDetailLevel.MethodSignature:
                     return LogCalls(proxii, logLevel, "called method %method%");
                 case MethodCallDetailLevel.Args:
-                    return LogCalls(proxii, logLevel, "Called method %method% with arguments (%args%)");
+                    return LogCalls(proxii, logLevel, "called method %method% with arguments (%args%)");
                 default:
                     return proxii;
             }
@@ -88,7 +98,7 @@ namespace Proxii.NLog
         /// <param name="proxii"></param>
         /// <param name="detailLevel">The level of information to provide in the log message</param>
         /// <returns></returns>
-        public static IProxii<T> LogCalls<T>(this IProxii<T> proxii, MethodCallDetailLevel detailLevel = MethodCallDetailLevel.MethodName)
+        public static IProxii<T> LogCalls<T>(this IProxii<T> proxii, MethodCallDetailLevel detailLevel = MethodCallDetailLevel.MethodSignature)
             where T : class
         {
             return LogCalls(proxii, LogLevel.Info, detailLevel);
@@ -99,7 +109,7 @@ namespace Proxii.NLog
         /// 
         /// Method call logging is performed before invocation.
         /// 
-        /// The format string replaces "%method%" with the method name and
+        /// The format string replaces "%method%" with the method signature and
         /// "%args%" with a comma-delimited argument list
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -120,13 +130,13 @@ namespace Proxii.NLog
         /// "%timing%" with the timing in ms. By default uses 2-digit floating point format (e.g. 2.64)
         /// If an alternative format is desired, pass a format string as specified in https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
         /// 
-        /// "%method%" with the method name
+        /// "%method%" with the method signature
         /// "%args%" with a comma-delimited argument list
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="proxii"></param>
         /// <param name="logLevel">NLog visibility level to log at</param>
-        /// <param name="messageFormat">Format string for message. See method description/docs.</param>
+        /// <param name="messageFormat">Format string for message. See method description/docs</param>
         /// <param name="timingFormat">Formatting to use for the timing parameter</param>
         /// <returns></returns>
         public static IProxii<T> LogBenchmark<T>(this IProxii<T> proxii, LogLevel logLevel, string messageFormat, string timingFormat = "F2")
@@ -147,7 +157,7 @@ namespace Proxii.NLog
         /// "%timing%" with the timing in ms. By default uses 2-digit floating point format (e.g. 2.64)
         /// If an alternative format is desired, pass a format string as specified in https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
         /// 
-        /// "%method%" with the method name
+        /// "%method%" with the method signature
         /// "%args%" with a comma-delimited argument list
         /// </summary>
         /// <typeparam name="T"></typeparam>
