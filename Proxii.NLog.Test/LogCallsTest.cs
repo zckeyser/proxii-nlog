@@ -1,40 +1,12 @@
-﻿using System.Dynamic;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System.IO;
-using System.Linq;
 using NLog;
-using NLog.LayoutRenderers;
-using Proxii;
 
 namespace Proxii.NLog.Test
 {
     [TestFixture]
-    public class LogCallsTest
+    public class LogCallsTest : BaseTest
     {
-        private const string TempDirectory = @"C:\temp";
-        private const string TestDirectory = @"C:\temp\proxii-nlog-test";
-        private const string InfoLogFilePath = @"C:\temp\proxii-nlog-test\info.log";
-        private const string TraceLogFilePath = @"C:\temp\proxii-nlog-test\trace.log";
-        private const string LimitedLogFilePath = @"C:\temp\proxii-nlog-test\limited.log";
-
-        [SetUp]
-        public void SetUp()
-        {
-            // in case a previous run got cut short
-            if(Directory.Exists(TestDirectory))
-                Directory.Delete(TestDirectory, true);
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            Directory.Delete(TestDirectory, true);
-
-            // get rid of the temp directory if our folder was the only thing in it
-            if (!Directory.EnumerateFiles(TempDirectory).Any())
-                Directory.Delete(TempDirectory);
-        }
-
         [Test]
         public void LogCalls_MethodSignatureDetailLevel()
         {
@@ -45,7 +17,7 @@ namespace Proxii.NLog.Test
             proxy.Do();
             proxy.Do("foo", 10);
 
-            var logContents = File.ReadAllLines(InfoLogFilePath);
+            var logContents = InfoLogContents;
 
             Assert.That(logContents.Length, Is.EqualTo(2));
             Assert.That(logContents[0].Contains("called method Do()"), Is.True);
@@ -61,7 +33,7 @@ namespace Proxii.NLog.Test
 
             proxy.Do("foo", 10);
 
-            var logContents = File.ReadAllLines(InfoLogFilePath);
+            var logContents = InfoLogContents;
 
             Assert.That(logContents.Length, Is.EqualTo(1));
             Assert.That(logContents[0].Contains("called method Do(String s, Int32 i) with arguments (foo, 10)"), Is.True);
@@ -78,7 +50,7 @@ namespace Proxii.NLog.Test
 
             proxy.Do("foo", 10);
 
-            var logContents = File.ReadAllLines(InfoLogFilePath);
+            var logContents = InfoLogContents;
 
             Assert.That(logContents.Length, Is.EqualTo(1));
             Assert.That(logContents[0].Contains("this formatted message was called when intercepting Do(String s, Int32 i) with arguments (foo, 10)"), Is.True);
@@ -93,7 +65,7 @@ namespace Proxii.NLog.Test
 
             proxy.Do("foo", 10);
 
-            var logContents = File.ReadAllLines(InfoLogFilePath);
+            var logContents = InfoLogContents;
 
             Assert.That(logContents.Length, Is.EqualTo(1));
             Assert.That(logContents[0].Contains("WARN|Proxii.NLog.Test.ILogTester|LogCalls() provided with empty or null format string"), Is.True);
@@ -113,8 +85,8 @@ namespace Proxii.NLog.Test
             traceProxy.Do();
             infoProxy.Do();
 
-            var traceLogContents = File.ReadAllLines(TraceLogFilePath);
-            var infoLogContents = File.ReadAllLines(InfoLogFilePath);
+            var traceLogContents = TraceLogContents;
+            var infoLogContents = InfoLogContents;
 
             Assert.That(traceLogContents.Length, Is.EqualTo(2));
             Assert.That(traceLogContents[0].Contains("TRACE"), Is.True);
@@ -133,7 +105,7 @@ namespace Proxii.NLog.Test
 
             proxy.Do();
 
-            var logContents = File.ReadAllLines(InfoLogFilePath);
+            var logContents = InfoLogContents;
 
             Assert.That(logContents.Length, Is.EqualTo(1));
             Assert.That(logContents[0].Contains("INFO"), Is.True);
@@ -153,8 +125,8 @@ namespace Proxii.NLog.Test
             normalProxy.Do();
             limitedProxy.Do();
 
-            var normalLogContents = File.ReadAllLines(InfoLogFilePath);
-            var limitedLogContents = File.ReadAllLines(LimitedLogFilePath);
+            var normalLogContents = InfoLogContents;
+            var limitedLogContents = LimitedLogContents;
 
             Assert.That(normalLogContents.Length, Is.EqualTo(2));
             Assert.That(normalLogContents[0].Contains("Proxii.NLog.Test.ILogTester"));
