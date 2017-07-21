@@ -48,7 +48,7 @@ namespace Proxii.NLog
         /// <param name="messageFormat">Format string for message. See method description/docs.</param>
         /// <param name="timingFormat">Formatting to use for the timing parameter</param>
         /// <returns></returns>
-        public static IProxii<T> LogBenchmark<T>(this IProxii<T> proxii, string messageFormat, string timingFormat = "F2")
+        public static IProxii<T> LogBenchmark<T>(this IProxii<T> proxii, string messageFormat, string timingFormat)
             where T : class
         {
             return LogBenchmark(proxii, LogLevel.Info, messageFormat, timingFormat);
@@ -57,17 +57,25 @@ namespace Proxii.NLog
         /// <summary>
         /// Logs a benchmark for all intercepted method calls 
         /// using the default format "method %method% took %timing% ms"
-        /// 
-        /// The format string replaces:
-        /// "%timing%" with the timing in ms. By default uses 2-digit floating point format (e.g. 2.64)
-        /// If an alternative format is desired, pass a format string <see cref="https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings"/>
-        /// 
-        /// "%method%" with the method signature
-        /// "%args%" with a comma-delimited argument list
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="proxii"></param>
         /// <param name="messageFormat">Format string for message. See method description/docs.</param>
+        /// <param name="logLevel">NLog logging level to log to</param>
+        /// <param name="timingFormat">Formatting to use for the timing parameter</param>
+        /// <returns></returns>
+        public static IProxii<T> LogBenchmark<T>(this IProxii<T> proxii, LogLevel logLevel, string timingFormat = "F2")
+            where T : class
+        {
+            return LogBenchmark(proxii, logLevel, "method %method% took %timing% ms", timingFormat);
+        }
+
+        /// <summary>
+        /// Logs a benchmark for all intercepted method calls 
+        /// using the default format "method %method% took %timing% ms"
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="proxii"></param>
         /// <param name="timingFormat">Formatting to use for the timing parameter</param>
         /// <returns></returns>
         public static IProxii<T> LogBenchmark<T>(this IProxii<T> proxii, string timingFormat = "F2")
@@ -83,7 +91,5 @@ namespace Proxii.NLog
                 logger.Log(logLevel, format, timing.ToString(timingFormat), method.GetMethodSignature(), string.Join(", ", args));
             };
         }
-
-
     }
 }
