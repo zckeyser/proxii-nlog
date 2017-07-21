@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using NLog;
 
 namespace Proxii.NLog
@@ -29,7 +25,7 @@ namespace Proxii.NLog
         public static IProxii<T> LogBenchmark<T>(this IProxii<T> proxii, LogLevel logLevel, string messageFormat, string timingFormat = "F2")
             where T : class
         {
-            var logger = GetLogger(typeof(T).FullName);
+            var logger = typeof(T).GetLogger();
             var nLogFormat = messageFormat.Replace("%timing%", "{0}")
                                           .Replace("%method%", "{1}")
                                           .Replace("%args%", "{2}");
@@ -84,7 +80,7 @@ namespace Proxii.NLog
         {
             return (timing, method, args) =>
             {
-                logger.Log(logLevel, format, timing.ToString(timingFormat), GetMethodSignature(method), string.Join(", ", args));
+                logger.Log(logLevel, format, timing.ToString(timingFormat), method.GetMethodSignature(), string.Join(", ", args));
             };
         }
 
