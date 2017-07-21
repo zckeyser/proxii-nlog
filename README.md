@@ -1,3 +1,5 @@
 # Proxii.NLog
 
-Extensions for the [Proxii](https://github.com/zckeyser/proxii) library which allow easily hooking auditing and timing logging into methods.
+Proxii.NLog is an extension for the Proxii library which allows one to easily hook into NLog. This is done via several extension methods on IProxii which automatically log to NLog loggers for the interface being proxied, allowing configuration of important details such as message format and log level.
+
+The current extension methods can be found here.
