@@ -55,6 +55,7 @@
     <Compile Include="ExtensionHelpers.cs" />
     <Compile Include="LogBenchmarkExtensions.cs" />
     <Compile Include="LogCallsExtensions.cs" />
+    <Compile Include="LogCallsObjectExtensions.cs" />
     <Compile Include="MethodCallDetailLevel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

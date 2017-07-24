@@ -42,14 +42,6 @@ namespace Proxii.NLog
             return proxii.BeforeInvoke(CreateLogCallsAction(logger, logLevel, nlogFormat));
         }
 
-        private static Action<MethodInfo, object[]> CreateLogCallsAction(Logger logger, LogLevel logLevel, string format)
-        {
-            return (method, args) =>
-            {
-                logger.Log(logLevel, format, method.GetMethodSignature(), string.Join(", ", args));
-            };
-        }
-
         /// <summary>
         /// Logs method calls to the configured logger based on a default format.
         /// 
@@ -111,6 +103,14 @@ namespace Proxii.NLog
             where T : class
         {
             return LogCalls(proxii, LogLevel.Info, format);
+        }
+
+        private static Action<MethodInfo, object[]> CreateLogCallsAction(Logger logger, LogLevel logLevel, string format)
+        {
+            return (method, args) =>
+            {
+                logger.Log(logLevel, format, method.GetMethodSignature(), string.Join(", ", args));
+            };
         }
     }
 }

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Proxii.NLog</id>
+    <version>1.0.0</version>
+    <authors>Chris Keyser</authors>
+    <owners>Chris Keyser</owners>
+    <licenseUrl>https://github.com/zckeyser/proxii-nlog/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/zckeyser/proxii-nlog</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Extensions for the Proxii library to easily hook into NLog</description>
+    <releaseNotes>Initial release, including LogCalls and LogBenchmark</releaseNotes>
+    <copyright>Copyright 2017</copyright>
+    <tags>proxii proxy nlog dynamicproxy interface behavior injection logging log automation</tags>
+  </metadata>
+</package>

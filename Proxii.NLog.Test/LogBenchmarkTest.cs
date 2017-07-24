@@ -112,10 +112,10 @@ namespace Proxii.NLog.Test
         [Test]
         public void LogBenchmark_FormatsCorrectly_LogLevelMessageAndTimingFormat()
         {
-            const string expectedPattern = @"TRACE\|.+running Do\(Int32 times\) took \d+\.\d{4} milliseconds";
+            const string expectedPattern = @"TRACE\|.+running Do\(Int32 times\) with arguments \(1000\) took \d+\.\d{4} milliseconds";
 
             var proxy = Proxii.Proxy<ILogBenchmarkTester, LogBenchmarkTester>()
-                              .LogBenchmark(LogLevel.Trace, "running %method% took %timing% milliseconds", "F4")
+                              .LogBenchmark(LogLevel.Trace, "running %method% with arguments (%args%) took %timing% milliseconds", "F4")
                               .Create();
 
             proxy.Do(1000);
