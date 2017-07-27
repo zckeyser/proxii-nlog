@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using Newtonsoft.Json;
 using NLog;
 
 namespace Proxii.NLog
@@ -35,13 +32,10 @@ namespace Proxii.NLog
                 switch (detailLevel)
                 {
                     case LogDetailLevel.Low:
-                        logger.Log(logLevel, GetLowDetailLog(method));
+                        logger.Log(logLevel, JsonConvert.SerializeObject(GetLowDetailLog(method)));
                         break;
                     case LogDetailLevel.Medium:
-                        logger.Log(logLevel, GetMediumDetailLog(method, args));
-                        break;
-                    case LogDetailLevel.High:
-                        // i don't think this is actually possible to make
+                        logger.Log(logLevel, JsonConvert.SerializeObject(GetMediumDetailLog(method, args)));
                         break;
                     default:
                         break;
@@ -76,8 +70,7 @@ namespace Proxii.NLog
     public enum LogDetailLevel
     {
         Low,
-        Medium,
-        High
+        Medium
     }
 
     public class LowDetailLog
@@ -94,15 +87,5 @@ namespace Proxii.NLog
         public string className;
         public string methodSignature;
         public object[] arguments;
-    }
-
-    public class HighDetailLog
-    {
-        public string methodName;
-        public string timestamp;
-        public string className;
-        public string methodSignature;
-        public string[] arguments;
-        public object callingObject;
     }
 }
