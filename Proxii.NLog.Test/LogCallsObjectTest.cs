@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using NLog;
 using NUnit.Framework;
 
 namespace Proxii.NLog.Test
@@ -30,19 +31,44 @@ namespace Proxii.NLog.Test
         [Test]
         public void LogCallsObject_MediumDetail()
         {
+            var proxy = Proxii.Proxy<ILogTester, LogTester>()
+                              .LogCallsObject(LogDetailLevel.Medium)
+                              .Create();
 
+            proxy.Do("foo", 100);
+
+            string pattern = $"{{\"methodName\":\"Do\",\"timestamp\":{ISODateTimePattern},\"className\":\"Proxii\\.NLog\\.Test\\.ILogTester\",\"methodSignature\":\"Do\\(String s, Int32 i\\)\",\"arguments\":\\[\"foo\",100\\]}}";
+
+            Assert.That(Regex.IsMatch(InfoLogContents[0], pattern), Is.True);
         }
 
         [Test]
         public void LogCallsObject_DefaultsToLowDetail()
         {
+            var proxy = Proxii.Proxy<ILogTester, LogTester>()
+                              .LogCallsObject()
+                              .Create();
 
+            proxy.Do();
+
+            string pattern = $"{{\"methodName\":\"Do\",\"timestamp\":{ISODateTimePattern},\"className\":\"Proxii\\.NLog\\.Test\\.ILogTester\"}}";
+
+            Assert.That(Regex.IsMatch(InfoLogContents[0], pattern), Is.True);
         }
 
         [Test]
         public void LogCallsObject_UsesLogLevel()
         {
 
+            var proxy = Proxii.Proxy<ILogTester, LogTester>()
+                              .LogCallsObject(LogLevel.Trace)
+                              .Create();
+
+            proxy.Do();
+
+            string pattern = $"{{\"methodName\":\"Do\",\"timestamp\":{ISODateTimePattern},\"className\":\"Proxii\\.NLog\\.Test\\.ILogTester\"}}";
+
+            Assert.That(Regex.IsMatch(TraceLogContents[0], pattern), Is.True);
         }
     }
 }
