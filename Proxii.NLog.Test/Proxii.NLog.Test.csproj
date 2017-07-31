@@ -58,6 +58,7 @@
     <Compile Include="LimitedLogTester.cs" />
     <Compile Include="LogBenchmarkTest.cs" />
     <Compile Include="LogBenchmarkTester.cs" />
+    <Compile Include="LogCallsObjectTest.cs" />
     <Compile Include="LogCallsTest.cs" />
     <Compile Include="LogTester.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
